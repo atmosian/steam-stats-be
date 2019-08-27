@@ -62,14 +62,7 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Build a response
-	output, err := json.Marshal(&response.Body.Games)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(output)
+	json.NewEncoder(w).Encode(&response.Body.Games)
 }
 
 // Game structure
