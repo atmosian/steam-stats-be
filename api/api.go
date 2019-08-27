@@ -26,6 +26,8 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 	httpClient := &http.Client{
 		Timeout: 3 * time.Second,
 	}
+	
+	log.Printf("[INFO] GET /players/%s/games", steamID)
 
 	// Build a request
 	req, _ := http.NewRequest("GET", "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/", nil)

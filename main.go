@@ -15,5 +15,7 @@ func main() {
 	router.HandleFunc("/players/{player-id}/games", api.GetOwnedGamesByPlayerID)
 
 	// Bind to a port and pass our router in
-	log.Fatal(http.ListenAndServe(":8000", router))
+	port := ":8000"
+	log.Printf("[INFO] Web server has been started on %s port", port)
+	log.Fatal(http.ListenAndServe(port, router))
 }
