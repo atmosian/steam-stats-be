@@ -10,8 +10,6 @@ import (
 )
 
 func main() {
-	// STEAM_API_TOKEN := os.Getenv("STEAM_API_TOKEN")
-
 	router := mux.NewRouter()
 
 	router.HandleFunc("/players/{player-id}/achievments", api.GetAchievementsByPlayerID)
