@@ -19,19 +19,16 @@ func GetAchievementsByPlayerID(w http.ResponseWriter, r *http.Request) {
 // GetOwnedGamesByPlayerID getting player games info
 func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 	apiKey := os.Getenv("STEAM_API_KEY")
-	if (apiKey == "") {
+
+	if apiKey == "" {
 		log.Printf("[ERROR] Environment variable STEAM_API_KEY must be specified")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(&ErrorMessage{"Environment variable STEAM_API_KEY must be specified"})
 		return
 	}
+
 	vars := mux.Vars(r)
 	steamID := vars["player-id"]
-	var response *Response
-
-	httpClient := &http.Client{
-		Timeout: 5 * time.Second,
-	}
 
 	log.Printf("[INFO] GET /players/%s/games", steamID)
 
@@ -43,8 +40,11 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 	q.Add("include_appinfo", "true")
 	q.Add("format", "json")
 	req.URL.RawQuery = q.Encode()
-
 	req.Header.Add("Accept", "application/json")
+
+	httpClient := &http.Client{
+		Timeout: 5 * time.Second,
+	}
 	httpResp, httpErr := httpClient.Do(req)
 
 	if httpErr != nil {
@@ -65,6 +65,7 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var response *Response
 	jsonErr := json.Unmarshal(body, &response)
 	if jsonErr != nil {
 		log.Printf("[ERROR] When during unmarshall: %s", jsonErr.Error())
