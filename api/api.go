@@ -19,29 +19,35 @@ func GetAchievementsByPlayerID(w http.ResponseWriter, r *http.Request) {
 // GetOwnedGamesByPlayerID getting player games info
 func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 	apiKey := os.Getenv("STEAM_API_KEY")
+	if (apiKey == "") {
+		log.Printf("[ERROR] Environment variable STEAM_API_KEY must be specified")
+		http.Error(w, "Environment variable STEAM_API_KEY must be specified", 500)
+		return
+	}
 	vars := mux.Vars(r)
 	steamID := vars["player-id"]
 	var response Response
 
 	httpClient := &http.Client{
-		Timeout: 3 * time.Second,
+		Timeout: 5 * time.Second,
 	}
-	
+
 	log.Printf("[INFO] GET /players/%s/games", steamID)
 
 	// Build a request
-	req, _ := http.NewRequest("GET", "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/", nil)
+	req, _ := http.NewRequest("GET", "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/", nil)
 	q := req.URL.Query()
 	q.Add("key", apiKey)
 	q.Add("steamid", steamID)
-	q.Add("include_appinfo", "1")
+	q.Add("include_appinfo", "true")
 	q.Add("format", "json")
 	req.URL.RawQuery = q.Encode()
-	
+
+	req.Header.Add("Content-Type", "application/json")
 	httpResp, httpErr := httpClient.Do(req)
 
 	if httpErr != nil {
-		log.Fatal(httpErr)
+		log.Printf("[ERROR] During get a HTTP response %s", httpErr.Error())
 		http.Error(w, httpErr.Error(), 500)
 		return
 	}
@@ -51,14 +57,14 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 	// A HTTP response deserialization
 	body, readErr := ioutil.ReadAll(httpResp.Body)
 	if readErr != nil {
-		log.Fatal(readErr)
+		log.Printf("[ERROR] When reading a HTTP response body: %s", readErr.Error())
 		http.Error(w, readErr.Error(), 500)
 		return
 	}
 
 	jsonErr := json.Unmarshal(body, &response)
 	if jsonErr != nil {
-		log.Fatal(jsonErr)
+		log.Printf("[ERROR] When during unmarshall: %s", jsonErr.Error())
 		http.Error(w, jsonErr.Error(), 500)
 		return
 	}
