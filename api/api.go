@@ -43,7 +43,7 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 	q.Add("format", "json")
 	req.URL.RawQuery = q.Encode()
 
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
 	httpResp, httpErr := httpClient.Do(req)
 
 	if httpErr != nil {
