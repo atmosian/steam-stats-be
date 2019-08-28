@@ -26,7 +26,7 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 	}
 	vars := mux.Vars(r)
 	steamID := vars["player-id"]
-	var response Response
+	var response *Response
 
 	httpClient := &http.Client{
 		Timeout: 5 * time.Second,
@@ -68,6 +68,8 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, jsonErr.Error(), 500)
 		return
 	}
+
+	log.Printf("[INFO] Recieved %d Game elements", len(response.Body.Games))
 
 	// Build a response
 	json.NewEncoder(w).Encode(&response.Body.Games)
