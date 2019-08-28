@@ -21,7 +21,8 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 	apiKey := os.Getenv("STEAM_API_KEY")
 	if (apiKey == "") {
 		log.Printf("[ERROR] Environment variable STEAM_API_KEY must be specified")
-		http.Error(w, "Environment variable STEAM_API_KEY must be specified", 500)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(&ErrorMessage{"Environment variable STEAM_API_KEY must be specified"})
 		return
 	}
 	vars := mux.Vars(r)
@@ -48,7 +49,8 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 
 	if httpErr != nil {
 		log.Printf("[ERROR] During get a HTTP response %s", httpErr.Error())
-		http.Error(w, httpErr.Error(), 500)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(&ErrorMessage{httpErr.Error()})
 		return
 	}
 
@@ -58,14 +60,16 @@ func GetOwnedGamesByPlayerID(w http.ResponseWriter, r *http.Request) {
 	body, readErr := ioutil.ReadAll(httpResp.Body)
 	if readErr != nil {
 		log.Printf("[ERROR] When reading a HTTP response body: %s", readErr.Error())
-		http.Error(w, readErr.Error(), 500)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(&ErrorMessage{readErr.Error()})
 		return
 	}
 
 	jsonErr := json.Unmarshal(body, &response)
 	if jsonErr != nil {
 		log.Printf("[ERROR] When during unmarshall: %s", jsonErr.Error())
-		http.Error(w, jsonErr.Error(), 500)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(&ErrorMessage{jsonErr.Error()})
 		return
 	}
 
@@ -92,4 +96,9 @@ type PlayerGames struct {
 
 type Response struct {
 	Body PlayerGames `json:"response"`
+}
+
+// ErrorMessage represents a error description
+type ErrorMessage struct {
+	Error string `json:"error"`
 }
